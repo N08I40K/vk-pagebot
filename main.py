@@ -10,14 +10,9 @@ import pytz
 import random
 import os
 import json
-
-#Help list start
-help_info = ""
-help_info += "Помощь: \n"
-help_info += "!id = Узнать id пользователя. Пример !id @hello\n"
-help_info += "!кик = Кикает указанного пользователя. Пример аналогичен первому.\n"
-help_info += "!chat_id = Показывает id беседы. (dev)"
-#Help list end
+import sys
+import configload
+from configload import *
 
 def reboot(is_trd_python):
     # функция перезагрузки бота
@@ -159,6 +154,10 @@ def main():
                                 send_msg(peer_id=peer_id, text="Пользователь с id: " + str(end_id) + " был кикнут.")
                             def get_help():
                                 send_msg(peer_id=peer_id, text=str(help_info))
+                            def get_time():
+                                time = (datetime.datetime.now(utc) + delta)
+                                timestr = time.strftime(fmt)
+                                send_msg(peer_id=peer_id, text=str(timemsg) + " \n" + str(timestr) + "\nСегодня " + str(days[time.weekday()]))
                             if command == cmd_prefix + "индекс" or command == cmd_with_index + "индекс":
                                 # команда для отображения индекса
                                 send_msg(peer_id=peer_id, text="Мой индекс: " + str(index))
@@ -188,12 +187,28 @@ def main():
                                 console_log(log_txt)
                                 message_log(log_txt)
                                 
+                            if command == cmd_prefix + "время" or command == cmd_with_index + "время":
+                                get_time()
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'время'"
+                                console_log(log_txt)
+                                message_log(log_txt)
+                                
                             if command == cmd_prefix + "id" or command == cmd_with_index + "id":
                                 get_id()
                                 time.sleep(delay)
                                 log_txt = "*id" + str(event.user_id) + " вызвал команду 'id'"
                                 console_log(log_txt)
                                 message_log(log_txt)
+                                
+                            if command == cmd_prefix + "reboot" or command == cmd_with_index + "reboot":
+                                send_msg(peer_id=peer_id, text="Выполняется перезапуск бота.")
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'reboot'"
+                                console_log(log_txt)
+                                message_log(log_txt)
+                                reboot(is_third_python)
+                                
                                 
                             if (command == cmd_prefix or command == cmd_with_index) and message_length > 1:
                                 # команда для "повторения" сообщения
