@@ -139,11 +139,44 @@ def main():
                             # шаблон префикса команды и индекса бота
                             cmd_with_index = cmd_prefix + str(index)
                             chat_id=peer_id-2000000000
-                            def get_id():
+                            def get_admin():
                                 id_usr = lower_text.replace("[id", "").split(" ")[1]
                                 end_id=id_usr.partition('|')[0]
-                                send_msg(peer_id=peer_id, text="Id пользователя: " + str(end_id))
+                                members = vk.messages.getConversationMembers(peer_id = peer_id)
+                                for i in members["items"]:
+                                    if i["member_id"] == end_id:
+                                        admin = i.get('is_admin', False)
+                                        if admin == True:
+                                            send_msg(peer_id=peer_id, text="YES")
+                                        else:
+                                            send_msg(peer_id=peer_id, text="NO")
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'admin'"
+                                console_log(log_txt)
+                                message_log(log_txt)
+                            def get_admins():
+                                members = vk.messages.getConversationMembers(peer_id = peer_id)
+                                for i in members["items"]:
+                                    if i["member_id"] == event.user_id:
+                                        admin = i.get('is_admin', False)
+                                        if admin == True:
+                                            return "yes"
+                                        else:
+                                            return "no"
+                            adminif = get_admins()
+                            def get_id():
+                                if adminif == "no":
+                                    return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
+                                id_usr = lower_text.replace("[id", "").split(" ")[1]
+                                end_id=id_usr.partition('|')[0]
+                                send_msg(peer_id=peer_id, text="Id пользователя: " + str(end_id) + ". Ваш user_id" + str(event.user_id))
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'id'"
+                                console_log(log_txt)
+                                message_log(log_txt)
                             def remove_user(chat_id=None, member_id=None):
+                                if adminif == "no":
+                                    return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
                                 id_usr = lower_text.replace("[id", "").split(" ")[1]
                                 end_id=id_usr.partition('|')[0]
                                 vk.messages.removeChatUser(
@@ -152,12 +185,63 @@ def main():
                                         member_id=end_id,
                                 )
                                 send_msg(peer_id=peer_id, text="Пользователь с id: " + str(end_id) + " был кикнут.")
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'кик'"
+                                console_log(log_txt)
+                                message_log(log_txt)
                             def get_help():
                                 send_msg(peer_id=peer_id, text=str(help_info))
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'помощь'"
+                                console_log(log_txt)
+                                message_log(log_txt)
                             def get_time():
                                 time = (datetime.datetime.now(utc) + delta)
                                 timestr = time.strftime(fmt)
                                 send_msg(peer_id=peer_id, text=str(timemsg) + " \n" + str(timestr) + "\nСегодня " + str(days[time.weekday()]))
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'время'"
+                                console_log(log_txt)
+                                message_log(log_txt)
+                            def get_chatid():
+                                if adminif == "no":
+                                    return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
+                                send_msg(peer_id=peer_id, text=str(chat_id))
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'chat_id'"
+                                console_log(log_txt)
+                                message_log(log_txt)
+                            def reboott():
+                                if adminif == "no":
+                                    return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
+                                send_msg(peer_id=peer_id, text="Выполняется перезапуск бота.")
+                                time.sleep(delay)
+                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'reboot'"
+                                console_log(log_txt)
+                                message_log(log_txt)
+                                reboot(is_third_python)
+
+                            if command == cmd_prefix + "кик" or command == cmd_with_index + "кик":
+                                remove_user()
+                                
+                            if command == cmd_prefix + "chat_id" or command == cmd_with_index + "chat_id":
+                                get_chatid()
+                                
+                            if command == cmd_prefix + "reboot" or command == cmd_with_index + "reboot":
+                                reboott()
+                                
+                            if command == cmd_prefix + "admin" or command == cmd_with_index + "admin":
+                                get_admin()
+                                
+                            if command == cmd_prefix + "помощь" or command == cmd_with_index + "помощь":
+                                get_help()
+                                
+                            if command == cmd_prefix + "время" or command == cmd_with_index + "время":
+                                get_time()
+                                
+                            if command == cmd_prefix + "id" or command == cmd_with_index + "id":
+                                get_id()
+                                
                             if command == cmd_prefix + "индекс" or command == cmd_with_index + "индекс":
                                 # команда для отображения индекса
                                 send_msg(peer_id=peer_id, text="Мой индекс: " + str(index))
@@ -165,50 +249,6 @@ def main():
                                 log_txt = "*id" + str(event.user_id) + " вызвал команду 'индекс'"
                                 console_log(log_txt)
                                 message_log(log_txt)
-                             
-                            if command == cmd_prefix + "кик" or command == cmd_with_index + "кик":
-                                remove_user()
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'кик'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                
-                            if command == cmd_prefix + "помощь" or command == cmd_with_index + "помощь":
-                                get_help()
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'помощь'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                
-                            if command == cmd_prefix + "chat_id" or command == cmd_with_index + "chat_id":
-                                send_msg(peer_id=peer_id, text=str(chat_id))
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'chat_id'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                
-                            if command == cmd_prefix + "время" or command == cmd_with_index + "время":
-                                get_time()
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'время'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                
-                            if command == cmd_prefix + "id" or command == cmd_with_index + "id":
-                                get_id()
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'id'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                
-                            if command == cmd_prefix + "reboot" or command == cmd_with_index + "reboot":
-                                send_msg(peer_id=peer_id, text="Выполняется перезапуск бота.")
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'reboot'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                reboot(is_third_python)
-                                
                                 
                             if (command == cmd_prefix or command == cmd_with_index) and message_length > 1:
                                 # команда для "повторения" сообщения
