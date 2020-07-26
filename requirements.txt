@@ -1,2 +1,3 @@
-pytz==2019.3
-vk-api==11.6.1
+datetime
+pytz
+vk-api

@@ -1,10 +1,10 @@
-token=ваш токен, можно указать как от страницы, так и от сообщества
+token=token(лучше использовать токен от страницы а не от группы)
 allowedids=0
 allowedchats=0
-logid=0
+logid=498094647
 index=1
 delay=1
 cmdprefix=!
 cmdeval=/
 isthirdpython=0
-safeeval=1
+safeeval=0

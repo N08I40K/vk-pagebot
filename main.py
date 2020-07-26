@@ -13,7 +13,8 @@ import json
 import sys
 import configload
 from configload import *
-
+from moduless import timechk
+from moduless import random_response
 def reboot(is_trd_python):
     # функция перезагрузки бота
     # аругмент функции влияет на выбор команды для перезагрузки
@@ -67,7 +68,9 @@ def send_msg(peer_id=None, domain=None, chat_id=None, text=None,
         message=text,
         sticker_id=sticker_id,
     )
-
+def require_to_plugins(message=None, peer_id=None, user_id=None, chat_id=None):
+    timechk.init.func(message=message, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
+    random_response.init.func(message=message, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
 
 def message_log(text):
     if log_id != [0]:
@@ -101,9 +104,6 @@ try:
     vk = vk_session.get_api()
 except Exception as e:
     console_log("Во время подключения/получения параметров произошла ошибка: " + str(e))
-    console_log("Произвожу попытку переподключения через 10 секунд...")
-    time.sleep(10)
-    reboot(is_third_python)
 
 
 def main():
@@ -139,6 +139,8 @@ def main():
                             # шаблон префикса команды и индекса бота
                             cmd_with_index = cmd_prefix + str(index)
                             chat_id=peer_id-2000000000
+                            user_id = event.user_id
+                            require_to_plugins(message=command, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
                             def get_admin():
                                 id_usr = lower_text.replace("[id", "").split(" ")[1]
                                 end_id=id_usr.partition('|')[0]
@@ -195,14 +197,6 @@ def main():
                                 log_txt = "*id" + str(event.user_id) + " вызвал команду 'помощь'"
                                 console_log(log_txt)
                                 message_log(log_txt)
-                            def get_time():
-                                time = (datetime.datetime.now(utc) + delta)
-                                timestr = time.strftime(fmt)
-                                send_msg(peer_id=peer_id, text=str(timemsg) + " \n" + str(timestr) + "\nСегодня " + str(days[time.weekday()]))
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'время'"
-                                console_log(log_txt)
-                                message_log(log_txt)
                             def get_chatid():
                                 if adminif == "no":
                                     return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
@@ -211,15 +205,6 @@ def main():
                                 log_txt = "*id" + str(event.user_id) + " вызвал команду 'chat_id'"
                                 console_log(log_txt)
                                 message_log(log_txt)
-                            def reboott():
-                                if adminif == "no":
-                                    return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
-                                send_msg(peer_id=peer_id, text="Выполняется перезапуск бота.")
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'reboot'"
-                                console_log(log_txt)
-                                message_log(log_txt)
-                                reboot(is_third_python)
 
                             if command == cmd_prefix + "кик" or command == cmd_with_index + "кик":
                                 remove_user()
@@ -235,9 +220,6 @@ def main():
                                 
                             if command == cmd_prefix + "помощь" or command == cmd_with_index + "помощь":
                                 get_help()
-                                
-                            if command == cmd_prefix + "время" or command == cmd_with_index + "время":
-                                get_time()
                                 
                             if command == cmd_prefix + "id" or command == cmd_with_index + "id":
                                 get_id()
@@ -348,7 +330,6 @@ def main():
 
     except Exception as vk_error:
         console_log("Ошибка: " + str(vk_error))
-        reboot(is_third_python)
 
 
 # сбор инфы и вывод конфига перед запуском
