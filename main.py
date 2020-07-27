@@ -15,6 +15,8 @@ import configload
 from configload import *
 from moduless import timechk
 from moduless import random_response
+from moduless import curronline
+from moduless import db_users
 def reboot(is_trd_python):
     # функция перезагрузки бота
     # аругмент функции влияет на выбор команды для перезагрузки
@@ -71,13 +73,13 @@ def send_msg(peer_id=None, domain=None, chat_id=None, text=None,
 def require_to_plugins(message=None, peer_id=None, user_id=None, chat_id=None):
     timechk.init.func(message=message, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
     random_response.init.func(message=message, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
+    curronline.init.func(message=message, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
+    db_users.init.func(message=message, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
 
 def message_log(text):
     if log_id != [0]:
         for i in log_id:
             send_msg(user_id=i, text=text)
-            time.sleep(delay)
-
 
 # получаем первичные параметры для запуска бота из файла config.txt(в той же папке, где и скрипт)
 script_path = os.path.abspath(__file__).replace("main.py", "")
@@ -126,6 +128,8 @@ def main():
                             continue
                         # если доступ есть, то
                         if is_access_allowed:
+                            # таймаут
+                            time.sleep(delay)
                             # получаем параметры события
                             message_text = event.text
                             # длина сообщения в словах(нужно для некоторых команд)
@@ -141,21 +145,6 @@ def main():
                             chat_id=peer_id-2000000000
                             user_id = event.user_id
                             require_to_plugins(message=command, peer_id=peer_id, user_id=user_id, chat_id=chat_id)
-                            def get_admin():
-                                id_usr = lower_text.replace("[id", "").split(" ")[1]
-                                end_id=id_usr.partition('|')[0]
-                                members = vk.messages.getConversationMembers(peer_id = peer_id)
-                                for i in members["items"]:
-                                    if i["member_id"] == end_id:
-                                        admin = i.get('is_admin', False)
-                                        if admin == True:
-                                            send_msg(peer_id=peer_id, text="YES")
-                                        else:
-                                            send_msg(peer_id=peer_id, text="NO")
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'admin'"
-                                console_log(log_txt)
-                                message_log(log_txt)
                             def get_admins():
                                 members = vk.messages.getConversationMembers(peer_id = peer_id)
                                 for i in members["items"]:
@@ -171,11 +160,7 @@ def main():
                                     return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
                                 id_usr = lower_text.replace("[id", "").split(" ")[1]
                                 end_id=id_usr.partition('|')[0]
-                                send_msg(peer_id=peer_id, text="Id пользователя: " + str(end_id) + ". Ваш user_id" + str(event.user_id))
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'id'"
-                                console_log(log_txt)
-                                message_log(log_txt)
+                                send_msg(peer_id=peer_id, text="Id пользователя: " + str(end_id) + ". Ваш user_id: " + str(event.user_id) + ". peer_id: " + str(peer_id))
                             def remove_user(chat_id=None, member_id=None):
                                 if adminif == "no":
                                     return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
@@ -187,36 +172,21 @@ def main():
                                         member_id=end_id,
                                 )
                                 send_msg(peer_id=peer_id, text="Пользователь с id: " + str(end_id) + " был кикнут.")
-                                time.sleep(delay)
                                 log_txt = "*id" + str(event.user_id) + " вызвал команду 'кик'"
                                 console_log(log_txt)
                                 message_log(log_txt)
                             def get_help():
                                 send_msg(peer_id=peer_id, text=str(help_info))
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'помощь'"
-                                console_log(log_txt)
-                                message_log(log_txt)
                             def get_chatid():
                                 if adminif == "no":
                                     return send_msg(peer_id=peer_id, text="Извините, но вы не администратор :D")
                                 send_msg(peer_id=peer_id, text=str(chat_id))
-                                time.sleep(delay)
-                                log_txt = "*id" + str(event.user_id) + " вызвал команду 'chat_id'"
-                                console_log(log_txt)
-                                message_log(log_txt)
 
                             if command == cmd_prefix + "кик" or command == cmd_with_index + "кик":
                                 remove_user()
                                 
                             if command == cmd_prefix + "chat_id" or command == cmd_with_index + "chat_id":
                                 get_chatid()
-                                
-                            if command == cmd_prefix + "reboot" or command == cmd_with_index + "reboot":
-                                reboott()
-                                
-                            if command == cmd_prefix + "admin" or command == cmd_with_index + "admin":
-                                get_admin()
                                 
                             if command == cmd_prefix + "помощь" or command == cmd_with_index + "помощь":
                                 get_help()
@@ -227,24 +197,9 @@ def main():
                             if command == cmd_prefix + "индекс" or command == cmd_with_index + "индекс":
                                 # команда для отображения индекса
                                 send_msg(peer_id=peer_id, text="Мой индекс: " + str(index))
-                                time.sleep(delay)
                                 log_txt = "*id" + str(event.user_id) + " вызвал команду 'индекс'"
                                 console_log(log_txt)
                                 message_log(log_txt)
-                                
-                            if (command == cmd_prefix or command == cmd_with_index) and message_length > 1:
-                                # команда для "повторения" сообщения
-                                out_text = make_safe_string(give_words(message_text))
-                                send_msg(peer_id=peer_id, text=out_text)
-                                time.sleep(delay)
-                                log_txt = "*id " + str(event.user_id) + " вызвал текст: " + out_text
-                                if len(log_txt) > 3000:
-                                    log_txt_parts = [log_txt[0:3000], log_txt[3000:]]
-                                    for log_part in log_txt_parts:
-                                        message_log(log_part)
-                                else:
-                                    message_log(log_txt)
-                                console_log(log_txt)
 
                             if (command == cmd_eval or command == cmd_eval + str(index)) and message_length > 1:
                                 # Выполнение запроса в eval, замер временени выполения и типа значения

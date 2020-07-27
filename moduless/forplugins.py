@@ -21,6 +21,7 @@ delay = int(parameters_lines[5])
 cmd_prefix = parameters_lines[6]
 cmd_eval = parameters_lines[7]
 safe_eval = parameters_lines[9]
+reg_warn = parameters_lines[10]
 vk_session = vk_api.VkApi(token=parameters_lines[0])
 long_poll = VkLongPoll(vk_session)
 vk = vk_session.get_api()
